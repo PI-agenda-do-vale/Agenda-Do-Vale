@@ -36,6 +36,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { PostCard } from "@/components/agenda/PostCard";
 import { CreatePostDialog } from "@/components/agenda/CreatePostDialog";
+import { EventCarouselDialog } from "@/components/agenda/EventCarouselDialog";
 
 import { deletarEvento, listEventos } from "@/services/agendaService";
 import {
@@ -73,6 +74,8 @@ const Index = () => {
   const [loginSubmitting, setLoginSubmitting] = useState(false);
   const [editingPost, setEditingPost] = useState<EventoResponse | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [carouselOpen, setCarouselOpen] = useState(false);
+  const [carouselStart, setCarouselStart] = useState(0);
 
   const [paginacao, setPaginacao] = useState<PaginacaoResponse<EventoResponse>>({
     dados: [],
@@ -181,8 +184,8 @@ const Index = () => {
         />
         <div className="absolute inset-0 -z-10 bg-gradient-hero" />
 
-        <div className="container flex min-h-[78vh] flex-col justify-end pb-16 pt-24 text-white">
-          <div className="absolute top-6 right-6 flex gap-3">
+        <div className="container flex min-h-[26vh] flex-col justify-end pb-6 pt-16 text-white">
+          <div className="absolute top-3 right-3 flex gap-2">
             {user ? (
               <>
                 <Link
@@ -285,24 +288,22 @@ const Index = () => {
           </div>
 
           <div className="max-w-3xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs uppercase">
-              <Mountain className="h-4 w-4" />
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase">
+              <Mountain className="h-3 w-3" />
               Vale do Paraíba
             </div>
 
-            <h1 className="text-5xl font-bold">
+            <h1 className="text-4xl font-bold">
               Agenda do <span className="italic text-yellow-300">Vale</span>
             </h1>
 
-            <p className="mt-4 text-white/80">
+            <p className="mt-2 text-white/80">
               Eventos e lugares incríveis da região.
             </p>
 
-            <div className="mt-6 flex gap-6 text-sm">
-              <div className="flex items-center gap-2">
-                <CalendarDays />
-                {paginacao.total} eventos cadastrados
-              </div>
+            <div className="mt-2 flex items-center gap-2 text-xs text-white/80">
+              <CalendarDays className="h-3 w-3" />
+              {paginacao.total} eventos cadastrados
             </div>
           </div>
         </div>
@@ -314,9 +315,12 @@ const Index = () => {
 
           {user && (
             <>
-              <Button size="lg" variant="default" onClick={() => setCreateOpen(true)}>
+              <button
+                onClick={() => setCreateOpen(true)}
+                className="bg-accent text-accent-foreground shadow-soft px-4 py-2 rounded-md hover:bg-accent/90 transition font-medium"
+              >
                 Publicar
-              </Button>
+              </button>
               <CreatePostDialog
                 open={createOpen}
                 onOpenChange={setCreateOpen}
@@ -398,15 +402,26 @@ const Index = () => {
         ) : (
           <>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {paginacao.dados.map((post) => (
+              {paginacao.dados.map((post, index) => (
                 <PostCard
                   key={post.id}
                   post={post}
                   onEdit={setEditingPost}
                   onDelete={handleDelete}
+                  onView={() => {
+                    setCarouselStart(index);
+                    setCarouselOpen(true);
+                  }}
                 />
               ))}
             </div>
+
+            <EventCarouselDialog
+              posts={paginacao.dados}
+              startIndex={carouselStart}
+              open={carouselOpen}
+              onOpenChange={setCarouselOpen}
+            />
 
             {/* PAGINAÇÃO */}
             {paginacao.totalPaginas > 1 && (

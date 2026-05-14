@@ -8,6 +8,7 @@ interface PostCardProps {
   post: EventoResponse;
   onEdit?: (post: EventoResponse) => void;
   onDelete?: (post: EventoResponse) => void;
+  onView?: (post: EventoResponse) => void;
 }
 
 function formatDate(iso: string) {
@@ -28,12 +29,15 @@ function formatTime(iso: string) {
   return iso.slice(0, 5);
 }
 
-export const PostCard = ({ post, onEdit, onDelete }: PostCardProps) => {
+export const PostCard = ({ post, onEdit, onDelete, onView }: PostCardProps) => {
   const { user } = useAuth();
   const isOwner = user?.usuarioId === post.usuarioId;
 
   return (
-    <Card className="group overflow-hidden border-border/60 bg-card transition-smooth hover:-translate-y-1 hover:shadow-elegant animate-fade-up">
+    <Card
+      onClick={() => onView?.(post)}
+      className="group cursor-pointer overflow-hidden border-border/60 bg-card transition-smooth hover:-translate-y-1 hover:shadow-elegant animate-fade-up"
+    >
       {post.urlDaImagem && (
         <div className="relative h-48 w-full overflow-hidden bg-muted">
           {isOwner && (

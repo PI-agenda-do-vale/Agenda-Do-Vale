@@ -73,7 +73,7 @@ builder.Services.AddOpenApi(options =>
 
 builder.Services.AddFluentValidationConfig();
 
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;

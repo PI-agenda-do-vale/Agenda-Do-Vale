@@ -8,6 +8,7 @@ using AgendaDoVale.Infraestructure.AuthService;
 using AgendaDoVale.Infraestructure.Data.AppDBsContext;
 using AgendaDoVale.Infraestructure.Repositorios.EventoRepositorios;
 using AgendaDoVale.Infraestructure.Repositorios.UsuarioRepositorio;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,8 @@ namespace AgendaDoVale.Infraestructure.Data.DependencyInjections
     {
         public static IServiceCollection AddInfrastructure(
             this IServiceCollection services,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IWebHostEnvironment environment)
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
             var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
@@ -27,6 +29,21 @@ namespace AgendaDoVale.Infraestructure.Data.DependencyInjections
             if (!string.IsNullOrWhiteSpace(databaseUrl))
             {
                 connectionString = ConvertDatabaseUrl(databaseUrl);
+            }
+            else
+            {
+                var pgHost = Environment.GetEnvironmentVariable("PGHOST");
+                if (!string.IsNullOrWhiteSpace(pgHost))
+                {
+                    connectionString = BuildPostgresConnectionFromEnv();
+                }
+            }
+
+            if (!environment.IsDevelopment() && IsLocalHostConnection(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "Database connection is configured to localhost in a non-development environment. " +
+                    "Set DATABASE_URL or a remote PostgreSQL connection string in Railway.");
             }
 
             services.AddDbContext<AppDbContext>(options =>
@@ -74,6 +91,38 @@ namespace AgendaDoVale.Infraestructure.Data.DependencyInjections
             }
 
             return builder.ToString();
+        }
+
+        private static string BuildPostgresConnectionFromEnv()
+        {
+            var host = Environment.GetEnvironmentVariable("PGHOST") ?? Environment.GetEnvironmentVariable("POSTGRES_HOST");
+            var port = Environment.GetEnvironmentVariable("PGPORT") ?? "5432";
+            var database = Environment.GetEnvironmentVariable("PGDATABASE") ?? Environment.GetEnvironmentVariable("POSTGRES_DB");
+            var username = Environment.GetEnvironmentVariable("PGUSER") ?? Environment.GetEnvironmentVariable("POSTGRES_USER");
+            var password = Environment.GetEnvironmentVariable("PGPASSWORD") ?? Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+
+            var builder = new NpgsqlConnectionStringBuilder
+            {
+                Host = host,
+                Port = int.TryParse(port, out var parsedPort) ? parsedPort : 5432,
+                Database = database,
+                Username = username,
+                Password = password,
+                SslMode = SslMode.Prefer,
+                TrustServerCertificate = true
+            };
+
+            return builder.ToString();
+        }
+
+        private static bool IsLocalHostConnection(string connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+                return false;
+
+            var builder = new NpgsqlConnectionStringBuilder(connectionString);
+            var host = builder.Host?.ToLowerInvariant();
+            return host == "localhost" || host == "127.0.0.1" || host == "tcp://localhost";
         }
     }
 }

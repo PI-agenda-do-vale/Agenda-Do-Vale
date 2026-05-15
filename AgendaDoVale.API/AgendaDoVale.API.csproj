@@ -31,7 +31,7 @@
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**;$(SpaRoot)dist\**" />
   </ItemGroup>
 
-  <Target Name="EnsureNodeEnvironment" BeforeTargets="Build" Inputs="$(SpaRoot)package.json;$(SpaRoot)package-lock.json" Outputs="$(SpaRoot)node_modules\.package-lock.json">
+  <Target Name="EnsureNodeEnvironment" Condition="'$(SkipSpaBuild)' != 'true'" BeforeTargets="Build" Inputs="$(SpaRoot)package.json;$(SpaRoot)package-lock.json" Outputs="$(SpaRoot)node_modules\.package-lock.json">
     <Exec Command="node --version" ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="NodeExitCode" />
     </Exec>
@@ -40,12 +40,12 @@
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
   </Target>
 
-  <Target Name="BuildSpa" AfterTargets="EnsureNodeEnvironment" BeforeTargets="Build" Inputs="@(None);$(SpaRoot)package.json" Outputs="$(MSBuildProjectDirectory)\wwwroot\index.html">
+  <Target Name="BuildSpa" Condition="'$(SkipSpaBuild)' != 'true'" AfterTargets="EnsureNodeEnvironment" BeforeTargets="Build" Inputs="@(None);$(SpaRoot)package.json" Outputs="$(MSBuildProjectDirectory)\wwwroot\index.html">
     <Message Importance="high" Text="Compilando frontend com 'npm run build'..." />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
   </Target>
 
-  <Target Name="PublishSpa" AfterTargets="ComputeFilesToPublish">
+  <Target Name="PublishSpa" Condition="'$(SkipSpaBuild)' != 'true'" AfterTargets="ComputeFilesToPublish">
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
     <ItemGroup>

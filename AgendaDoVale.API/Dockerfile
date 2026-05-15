@@ -10,8 +10,13 @@ RUN apt-get update \
 
 COPY . .
 
+WORKDIR /src/AgendaDoVale.API/ClientApp
+RUN npm ci --silent
+RUN npm run build --silent
+
+WORKDIR /src
 RUN dotnet restore "AgendaDoVale.API/AgendaDoVale.API.csproj"
-RUN dotnet publish "AgendaDoVale.API/AgendaDoVale.API.csproj" -c Release -o /app/publish
+RUN dotnet publish "AgendaDoVale.API/AgendaDoVale.API.csproj" -c Release -o /app/publish /p:SkipSpaBuild=true
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app

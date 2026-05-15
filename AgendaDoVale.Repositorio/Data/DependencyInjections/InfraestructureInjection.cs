@@ -8,10 +8,10 @@ using AgendaDoVale.Infraestructure.AuthService;
 using AgendaDoVale.Infraestructure.Data.AppDBsContext;
 using AgendaDoVale.Infraestructure.Repositorios.EventoRepositorios;
 using AgendaDoVale.Infraestructure.Repositorios.UsuarioRepositorio;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Npgsql;
 
 namespace AgendaDoVale.Infraestructure.Data.DependencyInjections
@@ -21,9 +21,9 @@ namespace AgendaDoVale.Infraestructure.Data.DependencyInjections
         public static IServiceCollection AddInfrastructure(
             this IServiceCollection services,
             IConfiguration configuration,
-            IWebHostEnvironment environment)
+            IHostEnvironment environment)
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            var connectionString = configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
             var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
             if (!string.IsNullOrWhiteSpace(databaseUrl))
@@ -70,8 +70,7 @@ namespace AgendaDoVale.Infraestructure.Data.DependencyInjections
                 Username = userInfo.Length > 0 ? userInfo[0] : string.Empty,
                 Password = userInfo.Length > 1 ? userInfo[1] : string.Empty,
                 Database = uri.AbsolutePath.TrimStart('/'),
-                SslMode = SslMode.Prefer,
-                TrustServerCertificate = true
+                SslMode = SslMode.Prefer
             };
 
             if (!string.IsNullOrWhiteSpace(uri.Query))
@@ -108,8 +107,7 @@ namespace AgendaDoVale.Infraestructure.Data.DependencyInjections
                 Database = database,
                 Username = username,
                 Password = password,
-                SslMode = SslMode.Prefer,
-                TrustServerCertificate = true
+                SslMode = SslMode.Prefer
             };
 
             return builder.ToString();

@@ -25,10 +25,15 @@ namespace AgendaDoVale.Infraestructure.Data.DependencyInjections
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
             var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+            var databasePublicUrl = Environment.GetEnvironmentVariable("DATABASE_PUBLIC_URL");
 
             if (!string.IsNullOrWhiteSpace(databaseUrl))
             {
                 connectionString = ConvertDatabaseUrl(databaseUrl);
+            }
+            else if (!string.IsNullOrWhiteSpace(databasePublicUrl))
+            {
+                connectionString = ConvertDatabaseUrl(databasePublicUrl);
             }
             else
             {
@@ -43,7 +48,7 @@ namespace AgendaDoVale.Infraestructure.Data.DependencyInjections
             {
                 throw new InvalidOperationException(
                     "Database connection is configured to localhost in a non-development environment. " +
-                    "Set DATABASE_URL or a remote PostgreSQL connection string in Railway.");
+                    "Set DATABASE_URL, DATABASE_PUBLIC_URL, or a remote PostgreSQL connection string in Railway.");
             }
 
             services.AddDbContext<AppDbContext>(options =>

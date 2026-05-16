@@ -14,8 +14,17 @@ Railway deploy (Dockerfile)
   - `PGDATABASE` = `{{POSTGRES_DB}}`
   - `PGUSER` = `{{POSTGRES_USER}}`
   - `PGPASSWORD` = `{{POSTGRES_PASSWORD}}`
-  - `Jwt__Secret`
+  - `Jwt__Secret` = JWT signing secret (32+ chars)
+  - `Jwt__Issuer`
+  - `Jwt__Audience`
   - `Cors__AllowedOrigins__0` = frontend URL
+
+- Local development
+  - Use user-secrets for local env values:
+    - `dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Database=AgendaDoVale;Username=postgres;Password=<senha>"`
+    - `dotnet user-secrets set "Jwt:Secret" "<sua-chave-32+>"`
+    - `dotnet user-secrets set "Jwt:Issuer" "AgendaDoVale"`
+    - `dotnet user-secrets set "Jwt:Audience" "AgendaDoVale"`
 
 - Railway provides `PORT`; Dockerfile respects `PORT`.
 
